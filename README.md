@@ -39,7 +39,7 @@ p2p_persistent_peers = ["tcp://<hash>@54.78.173.66:26656"]
 So once you have that and your local node is syncing, call the below command in any directory on your machine.
 
 ```bash
-test-net-tool estimate-sync-time --remote-node-ip=54.76.21.80
+node ./build/app.js estimate-sync-time --remote-node-ip=54.76.21.80
 ```
 
 ### Start backing up anoma folder
@@ -48,7 +48,7 @@ When developing stuff a few times my local database files in `.anoma` got currup
 Get the absolute path to the root folder of anoma, it is the one where you have `.anoma`. You have to pass the root folder as below and you can pass a number to indicate 
 
 ```bash
-test-net-tool start-backing-up-anoma-folder --path-to-anoma-root=/my/stuff/anoma --frequency-in-minutes=5
+node ./build/app.js start-backing-up-anoma-folder --path-to-anoma-root=/my/stuff/anoma --frequency-in-minutes=5
 ```
 
 ### Anoma Doctor
