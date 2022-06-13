@@ -16,6 +16,11 @@ For now you should have node installed on your machine but in the future this ca
 # https://github.com/nvm-sh/nvm#install--update-script
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 
+# clone the scripts
+git clone https://github.com/anoma/dev-utils.git
+
+cd dev-utils
+
 # get the dependencies
 npm install
 
