@@ -16,8 +16,10 @@ estimate-sync-time --remote-node-ip=<REMOTE_IP>
     
     OPTIONS:
         --remote-node-ip            IP of a remote node
+        --start-logging             Starts to persist csv file to keep the development of sync
 
     EXAMPLES:
+        test-net-tool estimate-sync-time --remote-node-ip=54.76.21.80 --start-logging
         test-net-tool estimate-sync-time --remote-node-ip=54.76.21.80 # you can find this from .anoma/<network_id>/config.toml:[ledger.tendermint].p2p_persistent_peers but they must listen for network calls
 
 
@@ -34,7 +36,10 @@ start-backing-up-anoma-folder --remote-node-ip=<REMOTE_IP>
 
 `;
 
+// estimate sync time
 let remoteNodeIp: string;
+let startLogging: boolean = false;
+// backup anoma folder
 let pathToAnomaRoot: string;
 let frequencyInMinutesMaybe: string;
 let command = process.argv[2];
@@ -53,6 +58,10 @@ if (!commands.includes(command)) {
 process.argv.forEach((argument) => {
   const [key, value] = argument.split("=");
   switch (key) {
+    case "--start-logging": {
+      startLogging = true;
+      break;
+    }
     case "--remote-node-ip": {
       remoteNodeIp = value;
       break;
@@ -75,7 +84,7 @@ process.argv.forEach((argument) => {
 const main = async () => {
   if (command === "estimate-sync-time" && remoteNodeIp) {
     const estimateSyncTime = new EstimateSyncTime(remoteNodeIp);
-    await estimateSyncTime.startPingingRemote();
+    await estimateSyncTime.startPingingRemote(startLogging);
   } else if (command === "start-backing-up-anoma-folder") {
     const backupUtil = new BackupAnomaFolder(pathToAnomaRoot);
     const frequencyInMinutes = Number(frequencyInMinutesMaybe) || 20;

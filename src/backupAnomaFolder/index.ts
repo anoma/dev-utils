@@ -1,4 +1,3 @@
-import { cp, rm } from "fs/promises";
 import { execSync } from "child_process";
 import { sleep } from "../utils";
 

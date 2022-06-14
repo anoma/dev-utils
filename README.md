@@ -45,6 +45,7 @@ So once you have that and your local node is syncing, call the below command in 
 
 ```bash
 node ./build/app.js estimate-sync-time --remote-node-ip=54.76.21.80
+node ./build/app.js estimate-sync-time --remote-node-ip=54.76.21.80 --start-logging
 ```
 
 ### Start backing up anoma folder
