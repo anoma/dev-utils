@@ -12,13 +12,15 @@ export class BackupAnomaFolder {
   startBackingUp = async (frequencyInMinutes: number) => {
     while (true) {
       const currentTime = new Date();
-      const currentTimeFormatted = `${currentTime.getFullYear()}_${currentTime.getMonth()}_${currentTime.getDate()}_${currentTime.getHours()}_${currentTime.getMinutes()}`;
+      const currentTimeFormatted = `${currentTime.getFullYear()}_${
+        currentTime.getMonth() + 1
+      }_${currentTime.getDate()}_${currentTime.getHours()}_${currentTime.getMinutes()}`;
       const directoryName = `${this.pathToAnomaRoot}/.anoma_${currentTimeFormatted}`;
       try {
         execSync(`cp -r ${this.pathToAnomaRoot}/.anoma ${directoryName}`);
         this.latestBackups.push(directoryName);
 
-        if (this.latestBackups.length > 2) {
+        if (this.latestBackups.length > 4) {
           execSync(`rm -r ${this.latestBackups[0]}`);
           const _ = this.latestBackups.shift();
         }

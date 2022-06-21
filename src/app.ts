@@ -4,6 +4,8 @@ import { EstimateSyncTime } from "./estimateSyncTime";
 import { BackupAnomaFolder } from "./backupAnomaFolder";
 
 const HELP_TEXT = `
+!!! instead of "test-net-tool <commands>" as mentioned below use "npx tsc && node ./build/app.js <commands>"
+!!! before the first use you have to run "npm install"
 USAGE:
     test-net-tool <OPTIONS>
     test-net-tool [COMMAND] <OPTIONS>
@@ -33,6 +35,8 @@ start-backing-up-anoma-folder --remote-node-ip=<REMOTE_IP>
         test-net-tool start-backing-up-anoma-folder # this is only useful if you can run this globally from anoma folder
         test-net-tool start-backing-up-anoma-folder --path-to-anoma-root=/my/stuff/anoma # this is the folder containing .anoma
         test-net-tool start-backing-up-anoma-folder --path-to-anoma-root=/my/stuff/anoma --frequency-in-minutes=5
+        test-net-tool start-backing-up-anoma-folder --path-to-anoma-root=/Users/memas/development2/60_anoma_test_net_With_validators/anoma --frequency-in-minutes=5
+
 
 `;
 
