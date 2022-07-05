@@ -1,0 +1,60 @@
+[global]
+log_level = 'debug'
+
+[mode]
+
+[mode.clients]
+enabled = true
+misbehaviour = true
+refresh = true
+
+[mode.connections]
+enabled = false
+
+[mode.channels]
+enabled = false
+
+[mode.packets]
+clear_interval = 10 # relay packets frequently
+clear_on_start = true 
+enabled = true 
+tx_confirmation = true 
+
+[telemetry]
+enabled = false
+host = '127.0.0.1'
+port = 3001
+
+[[chains]]
+account_prefix = 'cosmos' 
+clock_drift = '5s' 
+gas_price = {price = 0.001, denom = 'stake'} 
+grpc_addr = 'http://127.0.0.1:9090' 
+id = '#{CHAIN_A_ID}'
+key_name = 'albert' # tentative signer
+max_gas = 3000000 
+max_msg_num = 30 
+max_tx_size = 2097152 
+rpc_addr = 'http://127.0.0.1:27657' # set the port of the chain
+rpc_timeout = '10s' 
+store_prefix = 'ibc' 
+trust_threshold = {numerator = '1', denominator = '3'} 
+trusting_period = '14days' 
+websocket_addr = 'ws://127.0.0.1:27657/websocket' # set the port of the chain
+
+[[chains]]
+account_prefix = 'cosmos' 
+clock_drift = '5s' 
+gas_price = {price = 0.001, denom = 'stake'} 
+grpc_addr = 'http://127.0.0.1:9090' 
+id = '#{CHAIN_B_ID}'
+key_name = 'albert' # tentative signer
+max_gas = 3000000 
+max_msg_num = 30 
+max_tx_size = 2097152 
+rpc_addr = 'http://127.0.0.1:28657' # set the port of the chain
+rpc_timeout = '10s' 
+store_prefix = 'ibc' 
+trust_threshold = {numerator = '1', denominator = '3'} 
+trusting_period = '14days' 
+websocket_addr = 'ws://127.0.0.1:28657/websocket' # set the port of the chain
