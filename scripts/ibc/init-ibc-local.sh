@@ -37,8 +37,8 @@ check_dependencies() {
     exit 1
   fi
 
-  if [ ! command -v cargo &> /dev/null ]; then
-    printf "\n$STATUS_FAIL cargo could not be found, but is a required dependency!\n"
+  if [ ! command -v rustup &> /dev/null ]; then
+    printf "\n$STATUS_FAIL rustup could not be found, but is a required dependency!\n"
     echo "Install rustup: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
     exit 1
   fi
@@ -149,6 +149,7 @@ printf "\e$STATUS_INFO Installing Anoma\n"
 cd $BUILD_DIR/$ANOMA_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
 
 if [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anomac  ] || [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anoman ]; then
+  rustup target add wasm32-unknown-unknown
   git checkout $ANOMA_BRANCH && make install && make build-wasm-scripts
 else
   printf "$STATUS_NOTICE Anoma release targets already present, skipping build...\n"
