@@ -300,6 +300,28 @@ $( echo "${ANOMAN_PROCESSES%?}")
 
 EOF
 
+if [ $NETWORK != $LOCALHOST_URL ]; then
+  printf "$STATUS_NOTICE Updating for remote host configuration...\n"
+
+  # Update configs for Chain A
+  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_A_PATH/config.toml
+  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_A_PATH/setup/validator-0/.anoma/$CHAIN_A_ID/config.toml
+  sed -i 's/127.0.0.1/0.0.0.0/g' \
+    $CHAIN_A_PATH/setup/validator-0/.anoma/$CHAIN_A_ID/tendermint/config/config.toml
+  sed -i 's/^\(cors_allowed_origins =\).*/\1 ["*"]/' \
+    $CHAIN_A_PATH/setup/validator-0/.anoma/$CHAIN_A_ID/tendermint/config/config.toml
+
+  # Update configs for Chain B
+  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_B_PATH/config.toml
+  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_B_PATH/setup/validator-0/.anoma/$CHAIN_B_ID/config.toml
+  sed -i 's/127.0.0.1/0.0.0.0/g' \
+    $CHAIN_B_PATH/setup/validator-0/.anoma/$CHAIN_B_ID/tendermint/config/config.toml
+  sed -i 's/^\(cors_allowed_origins =\).*/\1 ["*"]/' \
+    $CHAIN_B_PATH/setup/validator-0/.anoma/$CHAIN_B_ID/tendermint/config/config.toml
+
+  printf "$STATUS_INFO Successfully updated configuration!\n\n"
+fi
+
 # Create IBC connection and channel
 
 printf "$STATUS_INFO Creating connection between $CHAIN_A_ID and $CHAIN_B_ID\n"
@@ -334,28 +356,6 @@ else
 fi
 cd $BUILD_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n" 
 
-if [ $NETWORK != $LOCALHOST_URL ]; then
-  printf "$STATUS_NOTICE Updating for remote host configuration...\n"
-
-  # Update configs for Chain A
-  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_A_PATH/config.toml
-  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_A_PATH/setup/validator-0/.anoma/$CHAIN_A_ID/config.toml
-  sed -i 's/127.0.0.1/0.0.0.0/g' \
-    $CHAIN_A_PATH/setup/validator-0/.anoma/$CHAIN_A_ID/tendermint/config/config.toml
-  sed -i 's/^\(cors_allowed_origins =\).*/\1 ["*"]/' \
-    $CHAIN_A_PATH/setup/validator-0/.anoma/$CHAIN_A_ID/tendermint/config/config.toml
-
-  # Update configs for Chain B
-  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_B_PATH/config.toml
-  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_B_PATH/setup/validator-0/.anoma/$CHAIN_B_ID/config.toml
-  sed -i 's/127.0.0.1/0.0.0.0/g' \
-    $CHAIN_B_PATH/setup/validator-0/.anoma/$CHAIN_B_ID/tendermint/config/config.toml
-  sed -i 's/^\(cors_allowed_origins =\).*/\1 ["*"]/' \
-    $CHAIN_B_PATH/setup/validator-0/.anoma/$CHAIN_B_ID/tendermint/config/config.toml
-
-  printf "$STATUS_INFO Successfully updated configuration!\n\n"
-fi
-
 # Generate a runtime config for CLI:
 CONFIG_PATH=$BUILD_DIR/config.toml
 
@@ -379,14 +379,14 @@ write_env() {
 # Chain A
 REACT_APP_CHAIN_A_ALIAS=${CHAIN_A_ALIAS}
 REACT_APP_CHAIN_A_ID=${CHAIN_A_ID}
-REACT_APP_CHAIN_A_URL=${NETWORK}
+REACT_APP_CHAIN_A_URL=http://${NETWORK}
 REACT_APP_CHAIN_A_PORT=${CHAIN_A_PORT}
 REACT_APP_CHAIN_A_FAUCET=${CHAIN_A_FAUCET}
 
 # Chain B
 REACT_APP_CHAIN_B_ALIAS=${CHAIN_B_ALIAS}
 REACT_APP_CHAIN_B_ID=${CHAIN_B_ID}
-REACT_APP_CHAIN_B_URL=${NETWORK}
+REACT_APP_CHAIN_B_URL=http://${NETWORK}
 REACT_APP_CHAIN_B_PORT=${CHAIN_B_PORT}
 REACT_APP_CHAIN_B_FAUCET=${CHAIN_B_FAUCET}
 EOF
