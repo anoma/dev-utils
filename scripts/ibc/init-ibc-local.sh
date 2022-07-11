@@ -300,6 +300,9 @@ $( echo "${ANOMAN_PROCESSES%?}")
 
 EOF
 
+# Wait for block height to be > 0
+sleep 3
+
 if [ $NETWORK != $LOCALHOST_URL ]; then
   printf "$STATUS_NOTICE Updating for remote host configuration...\n"
 
@@ -325,8 +328,6 @@ fi
 # Create IBC connection and channel
 
 printf "$STATUS_INFO Creating connection between $CHAIN_A_ID and $CHAIN_B_ID\n"
-# Wait for block height to be > 0
-sleep 3
 
 CONNECTION_STDOUT="$( cargo run --bin hermes -- -c config.toml \
   create connection $CHAIN_A_ID $CHAIN_B_ID ) "
