@@ -164,7 +164,7 @@ printf "$STATUS_INFO checked out $ANOMA_BRANCH\n"
 
 if [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anomac  ] || [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anoman ]; then
   printf "\n$STATUS_WARN Anoma not installed. Installing now...\n\n"
-  git checkout $ANOMA_BRANCH && make install
+  git checkout master && git pull && git checkout $ANOMA_BRANCH && make install
 
   rustup target add wasm32-unknown-unknown
   printf "\n$STATUS_INFO added rustup target wasm32-unknown-unknown\n"
