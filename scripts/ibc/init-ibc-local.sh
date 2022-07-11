@@ -12,7 +12,7 @@ Usage: $0 [-s] [-i <IP Address>] [-h]
   -i: Specify a non-localhost IP address (IP of machine where network is to be hosted)
   -h: Show this message
 
-  *Hint* - Set environment variable BASE_IBC_PATH to point build to a different path. Defaults to $(pwd)/build
+  *Hint* - Set environment variable BASE_BUILD_PATH to point build to a different path. Defaults to $(pwd)/build
 
   Required packages:
     - git
@@ -52,21 +52,27 @@ check_dependencies() {
 
 # DEFAULTS
 
-if [ ! -z $BASE_IBC_PATH ]; then
-  BASE_IBC_PATH=$BASE_IBC_PATH
+BASE_PATH=$(pwd)
+
+if [ ! -z $BASE_BUILD_PATH ]; then
+  BASE_BUILD_PATH=$BASE_BUILD_PATH
 else
-  BASE_IBC_PATH=$(pwd)
+  BASE_BUILD_PATH=$BASE_PATH
 fi
 
 if [ ! -z $ANOMA_BRANCH ]; then
+  ANOMA_BRANCH=$ANOMA_BRANCH
+else
   ANOMA_BRANCH="yuji/ibc_test_ibc-rs_v0.14"
 fi
 
 if [ ! -z $HERMES_BRANCH ]; then
+  HERMES_BRANCH=$HERMES_BRANCH
+else
   HERMES_BRANCH="yuji/v0.14.0_anoma"
 fi
 
-BUILD_DIR="$BASE_IBC_PATH/build"
+BUILD_DIR="$BASE_BUILD_PATH/build"
 ANOMA_DIR="anoma"
 HERMES_DIR="ibc-rs"
 
@@ -276,8 +282,8 @@ printf "$STATUS_INFO Copied $BUILD_DIR/$ANOMA_DIR/wasm/tx_ibc*.wasm -->\
  $BUILD_DIR/$HERMES_DIR/anoma_wasm/\n"
 
 # Copy configuration template to Hermes and add Namada Chain IDs
-cp $BASE_IBC_PATH/$HERMES_CONFIG_TEMPLATE $BUILD_DIR/$HERMES_DIR/config.toml
-printf "$STATUS_INFO Copied $BASE_IBC_PATH/$HERMES_CONFIG_TEMPLATE -->\
+cp $BASE_PATH/$HERMES_CONFIG_TEMPLATE $BUILD_DIR/$HERMES_DIR/config.toml
+printf "$STATUS_INFO Copied $BASE_PATH/$HERMES_CONFIG_TEMPLATE -->\
  $BUILD_DIR/$HERMES_DIR/config.toml\n"
 
 sed -i "s/$CHAIN_A_TEMPLATE/$CHAIN_A_ID/" $BUILD_DIR/$HERMES_DIR/config.toml

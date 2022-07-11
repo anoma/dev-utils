@@ -22,7 +22,16 @@ cd src
 ./init-ibc-local.sh -h
 ```
 
-_NOTE_ You can specify a `BASE_IBC_PATH` environment variable to choose where you want the `build` to be saved.
+_NOTE_ You can specify the following environment variables to override defaults used by the script:
+
+```bash
+# Set an alternative build path:
+BASE_BUILD_PATH="/opt/ibc"
+
+# Specify alternative branches
+ANOMA_BRANCH="justin/anoma-alternative-branch"
+HERMES_BRANCH="justin/ibc-rs-test"
+```
 
 Install and configure 2 Namada chains with the Hermes relayer:
 
