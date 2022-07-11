@@ -58,6 +58,14 @@ else
   BASE_IBC_PATH=$(pwd)
 fi
 
+if [ ! -z $ANOMA_BRANCH ]; then
+  ANOMA_BRANCH="yuji/ibc_test_ibc-rs_v0.14"
+fi
+
+if [ ! -z $HERMES_BRANCH ]; then
+  HERMES_BRANCH="yuji/v0.14.0_anoma"
+fi
+
 BUILD_DIR="$BASE_IBC_PATH/build"
 ANOMA_DIR="anoma"
 HERMES_DIR="ibc-rs"
@@ -81,9 +89,6 @@ GITHUB_HTTPS_URL="https://github.com"
 
 ANOMA_REPO="/anoma/anoma.git"
 HERMES_REPO="/heliaxdev/ibc-rs.git"
-
-ANOMA_BRANCH="yuji/ibc_test_ibc-rs_v0.14"
-HERMES_BRANCH="yuji/v0.14.0_anoma"
 
 GENESIS_PATH="genesis/e2e-tests-single-node.toml"
 WASM_CHECKSUMS_PATH="wasm/checksums.json"
