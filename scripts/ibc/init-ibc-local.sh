@@ -156,12 +156,21 @@ printf "$STATUS_INFO Cloning $HERMES_GIT_URL\n"
   printf "$STATUS_NOTICE Directory ibc-rs exists, skipping git clone...\n\n"
 
 # Install Anoma
-printf "\e$STATUS_INFO Installing Anoma\n"
+printf "\n$STATUS_INFO Installing Anoma\n"
 cd $BUILD_DIR/$ANOMA_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
 
+git checkout $ANOMA_BRANCH
+printf "$STATUS_INFO checked out $ANOMA_BRANCH\n"
+
 if [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anomac  ] || [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anoman ]; then
+  printf "\n$STATUS_WARN Anoma not installed. Installing now...\n\n"
+  git checkout $ANOMA_BRANCH && make install
+
   rustup target add wasm32-unknown-unknown
-  git checkout $ANOMA_BRANCH && make install && make build-wasm-scripts
+  printf "\n$STATUS_INFO added rustup target wasm32-unknown-unknown\n"
+
+  printf "\n$STATUS_INFO Building wasm scripts...\n\n"
+  make build-wasm-scripts
 else
   printf "$STATUS_NOTICE Anoma release targets already present, skipping build...\n"
 
