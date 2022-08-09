@@ -58,3 +58,20 @@ store_prefix = 'ibc'
 trust_threshold = {numerator = '1', denominator = '3'} 
 trusting_period = '14days' 
 websocket_addr = 'ws://127.0.0.1:28657/websocket' # set the port of the chain
+
+[[chains]]
+id = 'gaia'
+rpc_addr = 'http://127.0.0.1:26657'
+grpc_addr = 'http://127.0.0.1:9092'
+websocket_addr = 'ws://127.0.0.1:26657/websocket'
+rpc_timeout = '10s'
+account_prefix = 'cosmos'
+key_name = 'testkey'
+store_prefix = 'ibc'
+max_gas = 3000000
+max_msg_num = 30
+max_tx_size = 2097152
+gas_price = { price = 0.001, denom = 'stake' }
+clock_drift = '5s'
+trusting_period = '14days'
+trust_threshold = { numerator = '1', denominator = '3' }

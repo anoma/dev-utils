@@ -41,6 +41,7 @@ CHAIN_B_BASE_DIR="${BASE_IBC_PATH}/build/anoma/.anoma/${CHAIN_B_ID}/setup/valida
 
 ANOMAN_PATH="${BASE_IBC_PATH}/build/anoma/target/release/anoman"
 HERMES_PATH="${BASE_IBC_PATH}/build/ibc-rs"
+GAIA_PATH="${BASE_IBC_PATH}/build/gaia"
 
 if [ -z "$1" ]
 then
@@ -77,6 +78,11 @@ start_hermes() {
   cd $HERMES_PATH && exec cargo run --bin hermes -- -c config.toml start
 }
 
+start_gaia() {
+  printf "$STATUS_INFO Staring Gaia\n\n"
+  cd $GAIA_PATH && exec build/gaiad --home $HERMES_PATH/data/gaia start --pruning=nothing --grpc.address="0.0.0.0:9092" --log_level error
+}
+
 case $APP in
   chain-a)
     start_chain_a
@@ -86,6 +92,9 @@ case $APP in
     ;;
   hermes)
     start_hermes
+    ;;
+  gaia)
+    start_gaia
     ;;
   *)
     echo "No app by that name found!"

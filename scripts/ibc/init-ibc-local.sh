@@ -72,9 +72,16 @@ else
   HERMES_BRANCH="yuji/v0.14.0_anoma"
 fi
 
+if [ ! -z $GAIA_BRANCH ]; then
+  GAIA_BRANCH=$GAIA_BRANCH
+else
+  GAIA_BRANCH="yuji/ics23_smt"
+fi
+
 BUILD_DIR="$BASE_BUILD_PATH/build"
 ANOMA_DIR="anoma"
 HERMES_DIR="ibc-rs"
+GAIA_DIR="gaia"
 
 USE_GIT_SSH=false
 
@@ -95,6 +102,7 @@ GITHUB_HTTPS_URL="https://github.com"
 
 ANOMA_REPO="/anoma/anoma.git"
 HERMES_REPO="/heliaxdev/ibc-rs.git"
+GAIA_REPO="/heliaxdev/gaia.git"
 
 GENESIS_PATH="genesis/e2e-tests-single-node.toml"
 WASM_CHECKSUMS_PATH="wasm/checksums.json"
@@ -134,9 +142,11 @@ fi
 
 ANOMA_GIT_URL="${GITHUB_HTTPS_URL}${ANOMA_REPO}"
 HERMES_GIT_URL="${GITHUB_HTTPS_URL}${HERMES_REPO}"
+GAIA_GIT_URL="${GITHUB_HTTPS_URL}${GAIA_REPO}"
 
 [[ $USE_GIT_SSH == true ]] && ANOMA_GIT_URL="${GITHUB_SSH_URL}:${ANOMA_REPO}"
 [[ $USE_GIT_SSH == true ]] && HERMES_GIT_URL="${GITHUB_SSH_URL}:${HERMES_REPO}"
+[[ $USE_GIT_SSH == true ]] && GAIA_GIT_URL="${GIHUB_SSH_URL}:${GAIA_REPO}"
 
 check_dependencies
 
@@ -154,6 +164,11 @@ printf "\n$STATUS_INFO Cloning $ANOMA_GIT_URL\n"
 printf "$STATUS_INFO Cloning $HERMES_GIT_URL\n"
 [ ! -d $BUILD_DIR/$HERMES_DIR ] && git clone $HERMES_GIT_URL || \
   printf "$STATUS_NOTICE Directory ibc-rs exists, skipping git clone...\n\n"
+
+# Check for Gaia, git clone if none
+printf "$STATUS_INFO Cloning $GAIA_GIT_URL\n"
+[ ! -d $BUILD_DIR/$GAIA_DIR ] && git clone $GAIA_GIT_URL || \
+  printf "$STATUS_NOTICE Directory gaia exists, skipping git clone...\n\n"
 
 # Install Anoma
 printf "\n$STATUS_INFO Installing Anoma\n"
@@ -178,6 +193,16 @@ else
     printf "$STATUS_NOTICE Clearing existing Anoma configuration...\n"
     rm -rf $BUILD_DIR/$ANOMA_DIR/.anoma
   fi
+fi
+
+# Install Gaia
+
+if [ ! -f $BUILD_DIR/$GAIA_DIR/build/gaiad ]; then
+  printf "\n$STATUS_INFO Building Gaia"
+  cd $BUILD_DIR/$GAIA_DIR  && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
+  git checkout $GAIA_BRANCH && make build
+  export PATH=$PATH:${pwd}/build
+  cd - && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
 fi
 
 # Initialize Namada Chains
@@ -300,6 +325,14 @@ printf "$STATUS_INFO Added $CHAIN_A_ID to $BUILD_DIR/$HERMES_DIR/config.toml\n"
 sed -i "s/$CHAIN_B_TEMPLATE/$CHAIN_B_ID/" $BUILD_DIR/$HERMES_DIR/config.toml
 printf "$STATUS_INFO Added $CHAIN_B_ID to $BUILD_DIR/$HERMES_DIR/config.toml\n"
 
+# Initialize Gaia
+
+printf "$STATUS_INFO Initializing Gaia\n"
+cd $BUILD_DIR/$HERMES_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
+./scripts/one-chain gaiad gaia ./data 26657 26656 26660 9092 100
+
+# Launch Namada chains
+
 # Spawn Chain A
 printf "$STATUS_INFO Spawning Chain A anoman process\n"
 CHAIN_A_PID=$( spawn_anoma $CHAIN_A_ID )
@@ -369,12 +402,16 @@ CHANNEL_ID="channel-$( echo "${CHANNEL_STDOUT%?}" | grep -A 3 "channel_id: Some"
 echo "${CHANNEL_STDOUT%?}"
 printf "$STATUS_INFO Established channel with ID: $CHANNEL_ID\n"
 
-# Kill existing anoman processes:
+# Kill existing anoman and gaiad processes:
 if [ ! command -v pkill &> /dev/null ]; then
-  printf "$STATUS_NOTICE pkill command not found! You will need to manually kill PIDs: $CHAIN_A_PID & $CHAIN_B_PID\n\n"
+  kill -9 $CHAIN_A_PID && printf "$STATUS_WARN Killed process with PID = $CHAIN_A_PID\n"
+  kill -9 $CHAIN_B_PID && printf "$STATUS_WARN Killed process with PID = $CHAIN_B_PID\n"
+  # TODO: Get PID of gaiad to kill here, to be invoked manually later
 else
   pkill anoman
+  pkill gaiad
 fi
+
 cd $BUILD_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n" 
 
 # Generate a runtime config for CLI:
