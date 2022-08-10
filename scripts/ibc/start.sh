@@ -38,9 +38,11 @@ CHAIN_B_ID=$( echo "${CONFIG%?}" | grep -m2 "chain_id" | sed -n 2p | cut -d \" -
 
 CHAIN_A_BASE_DIR="${BASE_IBC_PATH}/build/anoma/.anoma/${CHAIN_A_ID}/setup/validator-0/.anoma"
 CHAIN_B_BASE_DIR="${BASE_IBC_PATH}/build/anoma/.anoma/${CHAIN_B_ID}/setup/validator-0/.anoma"
-GAIA_HOME_DIR="$HERMES_PATH/data/gaia"
+
 ANOMAN_PATH="${BASE_IBC_PATH}/build/anoma/target/release/anoman"
 HERMES_PATH="${BASE_IBC_PATH}/build/ibc-rs"
+
+GAIA_HOME_DIR="$HERMES_PATH/data/gaia"
 GAIA_PATH="${BASE_IBC_PATH}/build/gaia"
 
 if [ -z "$1" ]
