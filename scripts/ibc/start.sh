@@ -34,7 +34,7 @@ fi
 
 CONFIG="$( cat $CONFIG_PATH ) "
 CHAIN_A_ID=$( echo "${CONFIG%?}" | grep -m1 "chain_id" | cut -d \" -f2 )
-CHAIN_B_ID=$( echo "${CONFIG%?}" | grep -m2 "chain_id" | cut -d \" -f2 )
+CHAIN_B_ID=$( echo "${CONFIG%?}" | grep -m2 "chain_id" | sed -n 2p | cut -d \" -f2 )
 
 CHAIN_A_BASE_DIR="${BASE_IBC_PATH}/build/anoma/.anoma/${CHAIN_A_ID}/setup/validator-0/.anoma"
 CHAIN_B_BASE_DIR="${BASE_IBC_PATH}/build/anoma/.anoma/${CHAIN_B_ID}/setup/validator-0/.anoma"
