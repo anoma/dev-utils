@@ -111,11 +111,11 @@ WASM_CHECKSUMS_PATH="wasm/checksums.json"
 LOCALHOST_URL="127.0.0.1"
 NETWORK=""
 
-# Spawn an anoman child process and return the PID
+# Spawn an namadan child process and return the PID
 spawn_anoma() {
   CHAIN_ID=$1
   cd $BUILD_DIR/$NAMADA_DIR
-  nohup $BUILD_DIR/$NAMADA_DIR/target/release/anoman --base-dir .anoma/$CHAIN_ID/setup/validator-0/.anoma \
+  nohup $BUILD_DIR/$NAMADA_DIR/target/release/namadan --base-dir .anoma/$CHAIN_ID/setup/validator-0/.anoma \
     --mode validator ledger run > /dev/null &
   echo $!
 }
@@ -342,13 +342,13 @@ printf "$STATUS_INFO Spawned namadan process for $CHAIN_A_ID with PID: $CHAIN_A_
 # Spawn Chain B
 printf "$STATUS_INFO Spawning Chain B namadan process\n"
 CHAIN_B_PID=$( spawn_anoma $CHAIN_B_ID )
-printf "$STATUS_INFO Spawned anoman process for $CHAIN_B_ID with PID: $CHAIN_B_PID\n\n"
+printf "$STATUS_INFO Spawned namadan process for $CHAIN_B_ID with PID: $CHAIN_B_PID\n\n"
 
 ANOMAN_PROCESSES="$( ps -e | grep namadan ) "
 cat <<EOF >&2
 
 -----------------------------------
-anoman processes
+namadan processes
 -----------------------------------
 $( echo "${ANOMAN_PROCESSES%?}")
 
