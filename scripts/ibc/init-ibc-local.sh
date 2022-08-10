@@ -60,11 +60,11 @@ else
   BASE_BUILD_PATH=$BASE_PATH
 fi
 
-if [ ! -z $NAMADA_BRANCH ]; then
-  NAMADA_BRANCH=$NAMADA_BRANCH
+if [ ! -z $ANOMA_BRANCH ]; then
+  ANOMA_BRANCH=$ANOMA_BRANCH
 else
-  #NAMADA_BRANCH="yuji/ibc_test_ibc-rs_v0.14"
-  NAMADA_BRANCH="main"
+  #ANOMA_BRANCH="yuji/ibc_test_ibc-rs_v0.14"
+  ANOMA_BRANCH="justin/ibc_fix_main"
 fi
 
 if [ ! -z $HERMES_BRANCH ]; then
@@ -80,7 +80,7 @@ else
 fi
 
 BUILD_DIR="$BASE_BUILD_PATH/build"
-NAMADA_DIR="namada"
+ANOMA_DIR="anoma"
 HERMES_DIR="ibc-rs"
 GAIA_DIR="gaia"
 
@@ -101,7 +101,7 @@ CHAIN_B_FAUCET=""
 GITHUB_SSH_URL="git@github.com"
 GITHUB_HTTPS_URL="https://github.com"
 
-NAMADA_REPO="/anoma/namada.git"
+ANOMA_REPO="/anoma/anoma.git"
 HERMES_REPO="/heliaxdev/ibc-rs.git"
 GAIA_REPO="/heliaxdev/gaia.git"
 
@@ -111,11 +111,11 @@ WASM_CHECKSUMS_PATH="wasm/checksums.json"
 LOCALHOST_URL="127.0.0.1"
 NETWORK=""
 
-# Spawn an namadan child process and return the PID
+# Spawn an anoman child process and return the PID
 spawn_anoma() {
   CHAIN_ID=$1
-  cd $BUILD_DIR/$NAMADA_DIR
-  nohup $BUILD_DIR/$NAMADA_DIR/target/release/namadan --base-dir .anoma/$CHAIN_ID/setup/validator-0/.anoma \
+  cd $BUILD_DIR/$ANOMA_DIR
+  nohup $BUILD_DIR/$ANOMA_DIR/target/release/anoman --base-dir .anoma/$CHAIN_ID/setup/validator-0/.anoma \
     --mode validator ledger run > /dev/null &
   echo $!
 }
@@ -141,11 +141,11 @@ if [ -z $NETWORK ]; then
   NETWORK=$LOCALHOST_URL
 fi
 
-NAMADA_GIT_URL="${GITHUB_HTTPS_URL}${NAMADA_REPO}"
+ANOMA_GIT_URL="${GITHUB_HTTPS_URL}${ANOMA_REPO}"
 HERMES_GIT_URL="${GITHUB_HTTPS_URL}${HERMES_REPO}"
 GAIA_GIT_URL="${GITHUB_HTTPS_URL}${GAIA_REPO}"
 
-[[ $USE_GIT_SSH == true ]] && NAMADA_GIT_URL="${GITHUB_SSH_URL}:${NAMADA_REPO}"
+[[ $USE_GIT_SSH == true ]] && ANOMA_GIT_URL="${GITHUB_SSH_URL}:${ANOMA_REPO}"
 [[ $USE_GIT_SSH == true ]] && HERMES_GIT_URL="${GITHUB_SSH_URL}:${HERMES_REPO}"
 [[ $USE_GIT_SSH == true ]] && GAIA_GIT_URL="${GIHUB_SSH_URL}:${GAIA_REPO}"
 
@@ -154,11 +154,11 @@ check_dependencies
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR" && printf "\n$STATUS_WARN Set working directory to $(pwd)\n"
 
-# Clone namada and ibc-rs repositories
+# Clone anoma and ibc-rs repositories
 
 # Check for Namada, git clone if none
-printf "\n$STATUS_INFO Cloning $NAMADA_GIT_URL\n"
-[ ! -d $BUILD_DIR/$NAMADA_DIR ] &&  git clone  $NAMADA_GIT_URL || \
+printf "\n$STATUS_INFO Cloning $ANOMA_GIT_URL\n"
+[ ! -d $BUILD_DIR/$ANOMA_DIR ] &&  git clone  $ANOMA_GIT_URL || \
   printf "$STATUS_NOTICE Directory anoma exists, skipping git clone...\n\n"
 
 # Check for Hermes (ibc-rs), git clone if none
@@ -173,14 +173,14 @@ printf "$STATUS_INFO Cloning $GAIA_GIT_URL\n"
 
 # Install Namada
 printf "\n$STATUS_INFO Installing Namada\n"
-cd $BUILD_DIR/$NAMADA_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
+cd $BUILD_DIR/$ANOMA_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
 
-git checkout $NAMADA_BRANCH
-printf "$STATUS_INFO checked out $NAMADA_BRANCH\n"
+git checkout $ANOMA_BRANCH
+printf "$STATUS_INFO checked out $ANOMA_BRANCH\n"
 
-if [ ! -f $BUILD_DIR/$NAMADA_DIR/target/release/namadac  ] || [ ! -f $BUILD_DIR/$NAMADA_DIR/target/release/namadan ]; then
+if [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anomac  ] || [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anoman ]; then
   printf "\n$STATUS_WARN Namada not installed. Installing now...\n\n"
-  git checkout main && git pull && git checkout $NAMADA_BRANCH && make install
+  git checkout main && git pull && git checkout $ANOMA_BRANCH && make install
 
   rustup target add wasm32-unknown-unknown
   printf "\n$STATUS_INFO added rustup target wasm32-unknown-unknown\n"
@@ -190,9 +190,9 @@ if [ ! -f $BUILD_DIR/$NAMADA_DIR/target/release/namadac  ] || [ ! -f $BUILD_DIR/
 else
   printf "$STATUS_NOTICE Namada release targets already present, skipping build...\n"
 
-  if [ -d $BUILD_DIR/$NAMADA_DIR/.anoma ]; then
+  if [ -d $BUILD_DIR/$ANOMA_DIR/.anoma ]; then
     printf "$STATUS_NOTICE Clearing existing Namada configuration...\n"
-    rm -rf $BUILD_DIR/$NAMADA_DIR/.anoma
+    rm -rf $BUILD_DIR/$ANOMA_DIR/.anoma
   fi
 fi
 
@@ -209,23 +209,23 @@ fi
 # Initialize Namada Chains
 
 # Check to ensure vp_token hash is correct, update if not
-VP_TOKEN_OLD_HASH=$( cat $BUILD_DIR/$NAMADA_DIR/$GENESIS_PATH | grep -A 3 "wasm.vp_token" | grep sha256 | cut -d \" -f2 )
-VP_TOKEN_HASH=$( cat $BUILD_DIR/$NAMADA_DIR/$WASM_CHECKSUMS_PATH | grep "\"vp_token.wasm\"" | cut -d \" -f4 | cut -d \. -f2 )
+VP_TOKEN_OLD_HASH=$( cat $BUILD_DIR/$ANOMA_DIR/$GENESIS_PATH | grep -A 3 "wasm.vp_token" | grep sha256 | cut -d \" -f2 )
+VP_TOKEN_HASH=$( cat $BUILD_DIR/$ANOMA_DIR/$WASM_CHECKSUMS_PATH | grep "\"vp_token.wasm\"" | cut -d \" -f4 | cut -d \. -f2 )
 
 if [ $VP_TOKEN_OLD_HASH != $VP_TOKEN_HASH ]; then
   printf "$STATUS_NOTICE $VP_TOKEN_OLD_HASH != $VP_TOKEN_HASH\n"
   printf "$STATUS_NOTICE vp_token hash mismatch, updating...\n"
-  sed -i "s/$VP_TOKEN_OLD_HASH/$VP_TOKEN_HASH/g" $BUILD_DIR/$NAMADA_DIR/$GENESIS_PATH
-  printf "$STATUS_INFO Successfuly updated $BUILD_DIR/$NAMADA_DIR/$GENESIS_PATH!\n\n"
+  sed -i "s/$VP_TOKEN_OLD_HASH/$VP_TOKEN_HASH/g" $BUILD_DIR/$ANOMA_DIR/$GENESIS_PATH
+  printf "$STATUS_INFO Successfuly updated $BUILD_DIR/$ANOMA_DIR/$GENESIS_PATH!\n\n"
 fi
 
 # CHAIN A
 printf "$STATUS_INFO Initializing Chain A\n\n"
 # Swap net_address port for Chain A genesis
-sed -i "s/${CHAIN_B_NET_PORT}/${CHAIN_A_NET_PORT}/g" $BUILD_DIR/$NAMADA_DIR/$GENESIS_PATH
-printf "$STATUS_INFO Using $( grep "net_address" $BUILD_DIR/$NAMADA_DIR/$GENESIS_PATH )\n\n"
+sed -i "s/${CHAIN_B_NET_PORT}/${CHAIN_A_NET_PORT}/g" $BUILD_DIR/$ANOMA_DIR/$GENESIS_PATH
+printf "$STATUS_INFO Using $( grep "net_address" $BUILD_DIR/$ANOMA_DIR/$GENESIS_PATH )\n\n"
 
-CHAIN_A_INIT_STDOUT=$(./target/release/namadac utils init-network \
+CHAIN_A_INIT_STDOUT=$(./target/release/anomac utils init-network \
   --unsafe-dont-encrypt \
   --genesis-path $GENESIS_PATH \
   --chain-prefix anoma-test \
@@ -234,20 +234,20 @@ CHAIN_A_INIT_STDOUT=$(./target/release/namadac utils init-network \
   --wasm-checksums-path $WASM_CHECKSUMS_PATH)
 
 CHAIN_A_ID=$( echo "${CHAIN_A_INIT_STDOUT%?}" | grep "Derived" | sed 's/Derived chain ID: //g' )
-CHAIN_A_PATH="$BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_A_ID"
+CHAIN_A_PATH="$BUILD_DIR/$ANOMA_DIR/.anoma/$CHAIN_A_ID"
 
 printf "$STATUS_INFO Initialized Chain A: $CHAIN_A_ID\n\n"
-CHAIN_A_FAUCET=$( cat $BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_A_ID/setup/other/wallet.toml | \
+CHAIN_A_FAUCET=$( cat $BUILD_DIR/$ANOMA_DIR/.anoma/$CHAIN_A_ID/setup/other/wallet.toml | \
   grep "faucet " |  cut -d \" -f2 )
 printf "$STATUS_INFO Setting Chain A faucet to $CHAIN_A_FAUCET\n\n"
 
 # CHAIN B
 printf "$STATUS_INFO Initializing Chain B\n\n"
 # Swap net_address port for Chain B genesis
-sed -i "s/$CHAIN_A_NET_PORT/$CHAIN_B_NET_PORT/g" $BUILD_DIR/$NAMADA_DIR/$GENESIS_PATH
-printf "$STATUS_INFO Using $( grep "net_address" $BUILD_DIR/$NAMADA_DIR/$GENESIS_PATH )\n\n"
+sed -i "s/$CHAIN_A_NET_PORT/$CHAIN_B_NET_PORT/g" $BUILD_DIR/$ANOMA_DIR/$GENESIS_PATH
+printf "$STATUS_INFO Using $( grep "net_address" $BUILD_DIR/$ANOMA_DIR/$GENESIS_PATH )\n\n"
 
-CHAIN_B_INIT_STDOUT=$(./target/release/namadac utils init-network \
+CHAIN_B_INIT_STDOUT=$(./target/release/anomac utils init-network \
   --unsafe-dont-encrypt \
   --genesis-path $GENESIS_PATH \
   --chain-prefix anoma-test \
@@ -256,15 +256,15 @@ CHAIN_B_INIT_STDOUT=$(./target/release/namadac utils init-network \
   --wasm-checksums-path $WASM_CHECKSUMS_PATH)
 
 CHAIN_B_ID=$( echo "${CHAIN_B_INIT_STDOUT%?}" | grep "Derived" | sed 's/Derived chain ID: //g' )
-CHAIN_B_PATH="$BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_B_ID"
+CHAIN_B_PATH="$BUILD_DIR/$ANOMA_DIR/.anoma/$CHAIN_B_ID"
 
 printf "$STATUS_INFO Initialized Chain B: $CHAIN_B_ID\n\n"
-CHAIN_B_FAUCET=$( cat $BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_B_ID/setup/other/wallet.toml | \
+CHAIN_B_FAUCET=$( cat $BUILD_DIR/$ANOMA_DIR/.anoma/$CHAIN_B_ID/setup/other/wallet.toml | \
   grep "faucet " |  cut -d \" -f2 )
 printf "$STATUS_INFO Setting Chain B faucet to $CHAIN_B_FAUCET\n\n"
 
 # Set default chain to Chain A
-sed -i "s/$CHAIN_B_ID/$CHAIN_A_ID/" $BUILD_DIR/$NAMADA_DIR/.anoma/global-config.toml
+sed -i "s/$CHAIN_B_ID/$CHAIN_A_ID/" $BUILD_DIR/$ANOMA_DIR/.anoma/global-config.toml
 printf "$STATUS_INFO Set default chain to $CHAIN_A_ID\n\n"
 
 # Chain A - Copy wasms and checksums.json to appropriate directories
@@ -300,20 +300,20 @@ printf "$STATUS_INFO Created directory $BUILD_DIR/$HERMES_DIR/anoma_wallet/$CHAI
 
 # Copy chain files to Hermes
 
-cp $BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_A_ID/setup/other/wallet.toml $BUILD_DIR/$HERMES_DIR/anoma_wallet/$CHAIN_A_ID
-printf "$STATUS_INFO Copied $BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_A_ID/setup/other/wallet.toml -->\
+cp $BUILD_DIR/$ANOMA_DIR/.anoma/$CHAIN_A_ID/setup/other/wallet.toml $BUILD_DIR/$HERMES_DIR/anoma_wallet/$CHAIN_A_ID
+printf "$STATUS_INFO Copied $BUILD_DIR/$ANOMA_DIR/.anoma/$CHAIN_A_ID/setup/other/wallet.toml -->\
  $BUILD_DIR/$HERMES_DIR/anoma_wallet/$CHAIN_A_ID\n"
 
-cp $BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_B_ID/setup/other/wallet.toml $BUILD_DIR/$HERMES_DIR/anoma_wallet/$CHAIN_B_ID
-printf "$STATUS_INFO Copied $BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_B_ID/setup/other/wallet.toml -->\
+cp $BUILD_DIR/$ANOMA_DIR/.anoma/$CHAIN_B_ID/setup/other/wallet.toml $BUILD_DIR/$HERMES_DIR/anoma_wallet/$CHAIN_B_ID
+printf "$STATUS_INFO Copied $BUILD_DIR/$ANOMA_DIR/.anoma/$CHAIN_B_ID/setup/other/wallet.toml -->\
  $BUILD_DIR/$HERMES_DIR/anoma_wallet/$CHAIN_B_ID\n"
 
-cp $BUILD_DIR/$NAMADA_DIR/$WASM_CHECKSUMS_PATH $BUILD_DIR/$HERMES_DIR/anoma_wasm
-printf "$STATUS_INFO Copied $BUILD_DIR/$NAMADA_DIR/$WASM_CHECKSUMS_PATH -->\
+cp $BUILD_DIR/$ANOMA_DIR/$WASM_CHECKSUMS_PATH $BUILD_DIR/$HERMES_DIR/anoma_wasm
+printf "$STATUS_INFO Copied $BUILD_DIR/$ANOMA_DIR/$WASM_CHECKSUMS_PATH -->\
  $BUILD_DIR/$HERMES_DIR/anoma_wasm/\n"
 
-cp $BUILD_DIR/$NAMADA_DIR/wasm/tx_ibc*.wasm $BUILD_DIR/$HERMES_DIR/anoma_wasm
-printf "$STATUS_INFO Copied $BUILD_DIR/$NAMADA_DIR/wasm/tx_ibc*.wasm -->\
+cp $BUILD_DIR/$ANOMA_DIR/wasm/tx_ibc*.wasm $BUILD_DIR/$HERMES_DIR/anoma_wasm
+printf "$STATUS_INFO Copied $BUILD_DIR/$ANOMA_DIR/wasm/tx_ibc*.wasm -->\
  $BUILD_DIR/$HERMES_DIR/anoma_wasm/\n"
 
 # Copy configuration template to Hermes and add Namada Chain IDs
@@ -338,20 +338,20 @@ fi
 # Launch Namada chains
 
 # Spawn Chain A
-printf "$STATUS_INFO Spawning Chain A namadan process\n"
+printf "$STATUS_INFO Spawning Chain A anoman process\n"
 CHAIN_A_PID=$( spawn_anoma $CHAIN_A_ID )
-printf "$STATUS_INFO Spawned namadan process for $CHAIN_A_ID with PID: $CHAIN_A_PID\n\n"
+printf "$STATUS_INFO Spawned anoman process for $CHAIN_A_ID with PID: $CHAIN_A_PID\n\n"
 
 # Spawn Chain B
-printf "$STATUS_INFO Spawning Chain B namadan process\n"
+printf "$STATUS_INFO Spawning Chain B anoman process\n"
 CHAIN_B_PID=$( spawn_anoma $CHAIN_B_ID )
-printf "$STATUS_INFO Spawned namadan process for $CHAIN_B_ID with PID: $CHAIN_B_PID\n\n"
+printf "$STATUS_INFO Spawned anoman process for $CHAIN_B_ID with PID: $CHAIN_B_PID\n\n"
 
-ANOMAN_PROCESSES="$( ps -e | grep namadan ) "
+ANOMAN_PROCESSES="$( ps -e | grep anoman ) "
 cat <<EOF >&2
 
 -----------------------------------
-namadan processes
+anoman processes
 -----------------------------------
 $( echo "${ANOMAN_PROCESSES%?}")
 
@@ -434,13 +434,13 @@ CHANNEL_STDOUT="$( cargo run --bin hermes -- -c config.toml \
    gaia $CONNECTION_3_ID ) "
 CHANNEL_3_ID="channel-$( echo "${CHANNEL_STDOUT%?}" | grep -A 3 "channel_id: Some" | tr -d " " | grep -E -o -m1 "[0-9]+" )"
 
-# Kill existing namadan and gaiad processes:
+# Kill existing anoman and gaiad processes:
 if [ ! command -v pkill &> /dev/null ]; then
   kill -9 $CHAIN_A_PID && printf "$STATUS_WARN Killed process with PID = $CHAIN_A_PID\n"
   kill -9 $CHAIN_B_PID && printf "$STATUS_WARN Killed process with PID = $CHAIN_B_PID\n"
   # TODO: Get PID of gaiad to kill here, to be invoked manually later
 else
-  pkill namadan
+  pkill anoman
   pkill gaiad
 fi
 
