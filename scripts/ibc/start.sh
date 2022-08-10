@@ -82,7 +82,7 @@ start_hermes() {
 
 start_gaia() {
   printf "$STATUS_INFO Staring Gaia\n\n"
-  cd $GAIA_PATH && exec build/gaiad --home $GAIA_HOME_DIR start --grpc.address="0.0.0.0:9092" --log_level debug
+  cd $GAIA_PATH && exec build/gaiad --home $GAIA_HOME_DIR start --grpc.address="0.0.0.0:9092" --log_level info
 }
 
 case $APP in
