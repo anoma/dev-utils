@@ -228,7 +228,7 @@ printf "$STATUS_INFO Using $( grep "net_address" $BUILD_DIR/$NAMADA_DIR/$GENESIS
 CHAIN_A_INIT_STDOUT=$(./target/release/namadac utils init-network \
   --unsafe-dont-encrypt \
   --genesis-path $GENESIS_PATH \
-  --chain-prefix namada-test \
+  --chain-prefix anoma-test \
   --localhost \
   --dont-archive \
   --wasm-checksums-path $WASM_CHECKSUMS_PATH)
@@ -250,7 +250,7 @@ printf "$STATUS_INFO Using $( grep "net_address" $BUILD_DIR/$NAMADA_DIR/$GENESIS
 CHAIN_B_INIT_STDOUT=$(./target/release/namadac utils init-network \
   --unsafe-dont-encrypt \
   --genesis-path $GENESIS_PATH \
-  --chain-prefix namada-test \
+  --chain-prefix anoma-test \
   --localhost \
   --dont-archive \
   --wasm-checksums-path $WASM_CHECKSUMS_PATH)
