@@ -190,9 +190,9 @@ if [ ! -f $BUILD_DIR/$NAMADA_DIR/target/release/namadac  ] || [ ! -f $BUILD_DIR/
 else
   printf "$STATUS_NOTICE Namada release targets already present, skipping build...\n"
 
-  if [ -d $BUILD_DIR/$NAMADA_DIR/.namada ]; then
+  if [ -d $BUILD_DIR/$NAMADA_DIR/.anoma ]; then
     printf "$STATUS_NOTICE Clearing existing Namada configuration...\n"
-    rm -rf $BUILD_DIR/$NAMADA_DIR/.namada
+    rm -rf $BUILD_DIR/$NAMADA_DIR/.anoma
   fi
 fi
 
@@ -234,7 +234,7 @@ CHAIN_A_INIT_STDOUT=$(./target/release/namadac utils init-network \
   --wasm-checksums-path $WASM_CHECKSUMS_PATH)
 
 CHAIN_A_ID=$( echo "${CHAIN_A_INIT_STDOUT%?}" | grep "Derived" | sed 's/Derived chain ID: //g' )
-CHAIN_A_PATH="$BUILD_DIR/$NAMADA_DIR/.namada/$CHAIN_A_ID"
+CHAIN_A_PATH="$BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_A_ID"
 
 printf "$STATUS_INFO Initialized Chain A: $CHAIN_A_ID\n\n"
 CHAIN_A_FAUCET=$( cat $BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_A_ID/setup/other/wallet.toml | \
@@ -256,10 +256,10 @@ CHAIN_B_INIT_STDOUT=$(./target/release/namadac utils init-network \
   --wasm-checksums-path $WASM_CHECKSUMS_PATH)
 
 CHAIN_B_ID=$( echo "${CHAIN_B_INIT_STDOUT%?}" | grep "Derived" | sed 's/Derived chain ID: //g' )
-CHAIN_B_PATH="$BUILD_DIR/$NAMADA_DIR/.namada/$CHAIN_B_ID"
+CHAIN_B_PATH="$BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_B_ID"
 
 printf "$STATUS_INFO Initialized Chain B: $CHAIN_B_ID\n\n"
-CHAIN_B_FAUCET=$( cat $BUILD_DIR/$NAMADA_DIR/.namada/$CHAIN_B_ID/setup/other/wallet.toml | \
+CHAIN_B_FAUCET=$( cat $BUILD_DIR/$NAMADA_DIR/.anoma/$CHAIN_B_ID/setup/other/wallet.toml | \
   grep "faucet " |  cut -d \" -f2 )
 printf "$STATUS_INFO Setting Chain B faucet to $CHAIN_B_FAUCET\n\n"
 
@@ -271,8 +271,8 @@ printf "$STATUS_INFO Set default chain to $CHAIN_A_ID\n\n"
 
 cp wasm/*.wasm .anoma/$CHAIN_A_ID/wasm/
 cp wasm/checksums.json .anoma/$CHAIN_A_ID/wasm/
-cp wasm/*.wasm .anoma/$CHAIN_A_ID/setup/validator-0/.namada/$CHAIN_A_ID/wasm/
-cp wasm/checksums.json .anoma/$CHAIN_A_ID/setup/validator-0/.namadaa/$CHAIN_A_ID/wasm/
+cp wasm/*.wasm .anoma/$CHAIN_A_ID/setup/validator-0/.anoma/$CHAIN_A_ID/wasm/
+cp wasm/checksums.json .anoma/$CHAIN_A_ID/setup/validator-0/.anomaa/$CHAIN_A_ID/wasm/
 
 printf "$STATUS_INFO Copied wasms and checksums.json for $CHAIN_A_ID\n\n"
 
@@ -280,8 +280,8 @@ printf "$STATUS_INFO Copied wasms and checksums.json for $CHAIN_A_ID\n\n"
 
 cp wasm/*.wasm .anoma/$CHAIN_B_ID/wasm/
 cp wasm/checksums.json .anoma/$CHAIN_B_ID/wasm/
-cp wasm/*.wasm .anoma/$CHAIN_B_ID/setup/validator-0/.namada/$CHAIN_B_ID/wasm/
-cp wasm/checksums.json .anoma/$CHAIN_B_ID/setup/validator-0/.namada/$CHAIN_B_ID/wasm/
+cp wasm/*.wasm .anoma/$CHAIN_B_ID/setup/validator-0/.anoma/$CHAIN_B_ID/wasm/
+cp wasm/checksums.json .anoma/$CHAIN_B_ID/setup/validator-0/.anoma/$CHAIN_B_ID/wasm/
 
 printf "$STATUS_INFO Copied wasms and checksums.json for $CHAIN_B_ID\n\n"
 
@@ -362,19 +362,19 @@ if [ $NETWORK != $LOCALHOST_URL ]; then
 
   # Update configs for Chain A
   sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_A_PATH/config.toml
-  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_A_PATH/setup/validator-0/.namada/$CHAIN_A_ID/config.toml
+  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_A_PATH/setup/validator-0/.anoma/$CHAIN_A_ID/config.toml
   sed -i 's/127.0.0.1/0.0.0.0/g' \
-    $CHAIN_A_PATH/setup/validator-0/.namada/$CHAIN_A_ID/tendermint/config/config.toml
+    $CHAIN_A_PATH/setup/validator-0/.anoma/$CHAIN_A_ID/tendermint/config/config.toml
   sed -i 's/^\(cors_allowed_origins =\).*/\1 ["*"]/' \
-    $CHAIN_A_PATH/setup/validator-0/.namada/$CHAIN_A_ID/tendermint/config/config.toml
+    $CHAIN_A_PATH/setup/validator-0/.anoma/$CHAIN_A_ID/tendermint/config/config.toml
 
   # Update configs for Chain B
   sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_B_PATH/config.toml
-  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_B_PATH/setup/validator-0/.namada/$CHAIN_B_ID/config.toml
+  sed -i 's/127.0.0.1/0.0.0.0/g' $CHAIN_B_PATH/setup/validator-0/.anoma/$CHAIN_B_ID/config.toml
   sed -i 's/127.0.0.1/0.0.0.0/g' \
-    $CHAIN_B_PATH/setup/validator-0/.namada/$CHAIN_B_ID/tendermint/config/config.toml
+    $CHAIN_B_PATH/setup/validator-0/.anoma/$CHAIN_B_ID/tendermint/config/config.toml
   sed -i 's/^\(cors_allowed_origins =\).*/\1 ["*"]/' \
-    $CHAIN_B_PATH/setup/validator-0/.namada/$CHAIN_B_ID/tendermint/config/config.toml
+    $CHAIN_B_PATH/setup/validator-0/.anoma/$CHAIN_B_ID/tendermint/config/config.toml
 
   printf "$STATUS_INFO Successfully updated configuration!\n\n"
 fi
