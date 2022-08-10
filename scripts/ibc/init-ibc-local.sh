@@ -272,7 +272,7 @@ printf "$STATUS_INFO Set default chain to $CHAIN_A_ID\n\n"
 cp wasm/*.wasm .anoma/$CHAIN_A_ID/wasm/
 cp wasm/checksums.json .anoma/$CHAIN_A_ID/wasm/
 cp wasm/*.wasm .anoma/$CHAIN_A_ID/setup/validator-0/.anoma/$CHAIN_A_ID/wasm/
-cp wasm/checksums.json .anoma/$CHAIN_A_ID/setup/validator-0/.anomaa/$CHAIN_A_ID/wasm/
+cp wasm/checksums.json .anoma/$CHAIN_A_ID/setup/validator-0/.anoma/$CHAIN_A_ID/wasm/
 
 printf "$STATUS_INFO Copied wasms and checksums.json for $CHAIN_A_ID\n\n"
 
