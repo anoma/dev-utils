@@ -63,8 +63,7 @@ fi
 if [ ! -z $ANOMA_BRANCH ]; then
   ANOMA_BRANCH=$ANOMA_BRANCH
 else
-  #ANOMA_BRANCH="yuji/ibc_test_ibc-rs_v0.14"
-  ANOMA_BRANCH="justin/ibc_fix_main"
+  ANOMA_BRANCH="yuji/ibc_test_ibc-rs_v0.14"
 fi
 
 if [ ! -z $HERMES_BRANCH ]; then
