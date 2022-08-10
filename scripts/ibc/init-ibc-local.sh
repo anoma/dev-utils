@@ -330,6 +330,9 @@ printf "$STATUS_INFO Added $CHAIN_B_ID to $BUILD_DIR/$HERMES_DIR/config.toml\n"
 
 printf "$STATUS_INFO Initializing Gaia\n"
 cd $BUILD_DIR/$HERMES_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
+if [ -d data/gaia ]; then
+  rm -rf data/gaia
+fi
 ./scripts/one-chain gaiad gaia ./data 26657 26656 26660 9092 100
 
 # Launch Namada chains
