@@ -100,7 +100,7 @@ CHAIN_B_FAUCET=""
 GITHUB_SSH_URL="git@github.com"
 GITHUB_HTTPS_URL="https://github.com"
 
-ANOMA_REPO="/anoma/anoma.git"
+ANOMA_REPO="/anoma/namada.git"
 HERMES_REPO="/heliaxdev/ibc-rs.git"
 GAIA_REPO="/heliaxdev/gaia.git"
 
@@ -179,7 +179,7 @@ printf "$STATUS_INFO checked out $ANOMA_BRANCH\n"
 
 if [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anomac  ] || [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anoman ]; then
   printf "\n$STATUS_WARN Anoma not installed. Installing now...\n\n"
-  git checkout master && git pull && git checkout $ANOMA_BRANCH && make install
+  git checkout main && git pull && git checkout $ANOMA_BRANCH && make install
 
   rustup target add wasm32-unknown-unknown
   printf "\n$STATUS_INFO added rustup target wasm32-unknown-unknown\n"
