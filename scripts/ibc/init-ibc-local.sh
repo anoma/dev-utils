@@ -385,22 +385,50 @@ printf "$STATUS_INFO Creating connection between $CHAIN_A_ID and $CHAIN_B_ID\n"
 CONNECTION_STDOUT="$( cargo run --bin hermes -- -c config.toml \
   create connection $CHAIN_A_ID $CHAIN_B_ID ) "
 
-CONNECTION_ID=$( echo "${CONNECTION_STDOUT%?}" | grep -A 3 connection_id | grep -m1 "connection-" |  tr -d " " | cut -d \" -f2 )
+CONNECTION_1_ID=$( echo "${CONNECTION_STDOUT%?}" | grep -A 3 connection_id | grep -m1 "connection-" |  tr -d " " | cut -d \" -f2 )
 
-printf "$STATUS_INFO Established connection with ID: $CONNECTION_ID\n"
+printf "$STATUS_INFO Established connection with ID: $CONNECTION_1_ID\n"
 
-printf "$STATUS_INFO Create channel on $CONNECTION_ID\n"
+printf "$STATUS_INFO Create channel on $CONNECTION_1_ID\n"
 
 CHANNEL_STDOUT="$( cargo run --bin hermes -- -c config.toml \
   create channel \
   --port-a transfer --port-b transfer \
-   $CHAIN_A_ID $CONNECTION_ID ) "
+   $CHAIN_A_ID $CONNECTION_1_ID ) "
 
 # We can likely just assume channel-0 for src and dst, as the chains will always be new.
 # This is mainly for debugging and seeing in the output that Hermes completed the channel creation process.
-CHANNEL_ID="channel-$( echo "${CHANNEL_STDOUT%?}" | grep -A 3 "channel_id: Some" | tr -d " " | grep -E -o -m1 "[0-9]+" )"
+CHANNEL_1_ID="channel-$( echo "${CHANNEL_STDOUT%?}" | grep -A 3 "channel_id: Some" | tr -d " " | grep -E -o -m1 "[0-9]+" )"
 echo "${CHANNEL_STDOUT%?}"
-printf "$STATUS_INFO Established channel with ID: $CHANNEL_ID\n"
+printf "$STATUS_INFO Established channel with ID: $CHANNEL_1_ID\n"
+
+# Add Gaia keys to Hermes
+printf "$STATUS_INFO Add user key Hermes\n"
+cargo run  --bin hermes -- -c config.toml keys add gaia -f data/gaia/user_seed.json
+printf "$STATUS_INFO Add user2 key to Hermes\n"
+cargo run  --bin hermes -- -c config.toml keys add gaia -f data/gaia/user2_seed.json
+
+# Create connection and channel between Gaia and Chain A
+printf "$STATUS_INFO Creating connection between gaia and $CHAIN_A_ID\n"
+CONNECTION_STDOUT="$( cargo run --bin hermes -- -c config.toml \
+  create connection gaia $CHAIN_A_ID ) "
+CONNECTION_2_ID=$( echo "${CONNECTION_STDOUT%?}" | grep -A 3 connection_id | grep -m1 "connection-" |  tr -d " " | cut -d \" -f2 )
+CHANNEL_STDOUT="$( cargo run --bin hermes -- -c config.toml \
+  create channel \
+  --port-a transfer --port-b transfer \
+   gaia $CONNECTION_2_ID ) "
+CHANNEL_2_ID="channel-$( echo "${CHANNEL_STDOUT%?}" | grep -A 3 "channel_id: Some" | tr -d " " | grep -E -o -m1 "[0-9]+" )"
+
+# Create connection and channel between Gaia and Chain B
+printf "$STATUS_INFO Creating connection between gaia and $CHAIN_B_ID\n"
+CONNECTION_STDOUT="$( cargo run --bin hermes -- -c config.toml \
+  create connection gaia $CHAIN_B_ID ) "
+CONNECTION_3_ID=$( echo "${CONNECTION_STDOUT%?}" | grep -A 3 connection_id | grep -m1 "connection-" |  tr -d " " | cut -d \" -f2 )
+CHANNEL_STDOUT="$( cargo run --bin hermes -- -c config.toml \
+  create channel \
+  --port-a transfer --port-b transfer \
+   gaia $CONNECTION_3_ID ) "
+CHANNEL_3_ID="channel-$( echo "${CHANNEL_STDOUT%?}" | grep -A 3 "channel_id: Some" | tr -d " " | grep -E -o -m1 "[0-9]+" )"
 
 # Kill existing anoman and gaiad processes:
 if [ ! command -v pkill &> /dev/null ]; then
@@ -419,13 +447,32 @@ CONFIG_PATH=$BUILD_DIR/config.toml
 
 write_config() {
   cat <<EOF > $CONFIG_PATH
-[chain]
+[[chain]]
+chain_id = "$CHAIN_A_ID"
+
+[[chain]]
+chain_id = "$CHAIN_B_ID"
+
+[[chain]]
+chain_id = "gaia"
+
+[[connection]]
 chain_a_id = "$CHAIN_A_ID"
 chain_b_id = "$CHAIN_B_ID"
+CONNECTION_1_ID = "$CONNECTION_1_ID"
+CHANNEL_1_ID = "$CHANNEL_1_ID"
 
-[ibc]
-connection_id = "$CONNECTION_ID"
-channel_id = "$CHANNEL_ID"
+[[connection]]
+chain_a_id = "gaia"
+chain_b_id = "$CHAIN_A_ID"
+CONNECTION_1_ID = "$CONNECTION_2_ID"
+CHANNEL_1_ID = "$CHANNEL_2_ID"
+
+[[connection]]
+chain_a_id = "gaia"
+chain_b_id = "$CHAIN_B_ID"
+CONNECTION_1_ID = "$CONNECTION_3_ID"
+CHANNEL_1_ID = "$CHANNEL_3_ID"
 EOF
 }
 
@@ -434,6 +481,8 @@ ENV_PATH=$BUILD_DIR/.env
 
 write_env() {
   cat <<EOF > $ENV_PATH
+GENERATE_SOURCEMAP=false
+
 # Chain A
 REACT_APP_CHAIN_A_ALIAS=${CHAIN_A_ALIAS}
 REACT_APP_CHAIN_A_ID=${CHAIN_A_ID}

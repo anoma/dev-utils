@@ -33,12 +33,12 @@ if [ ! -f $CONFIG_PATH ]; then
 fi
 
 CONFIG="$( cat $CONFIG_PATH ) "
-CHAIN_A_ID=$( echo "${CONFIG%?}" | grep "chain_a_id" | cut -d \" -f2 )
-CHAIN_B_ID=$( echo "${CONFIG%?}" | grep "chain_b_id" | cut -d \" -f2 )
+CHAIN_A_ID=$( echo "${CONFIG%?}" | grep -m1 "chain_id" | cut -d \" -f2 )
+CHAIN_B_ID=$( echo "${CONFIG%?}" | grep -m2 "chain_id" | cut -d \" -f2 )
 
 CHAIN_A_BASE_DIR="${BASE_IBC_PATH}/build/anoma/.anoma/${CHAIN_A_ID}/setup/validator-0/.anoma"
 CHAIN_B_BASE_DIR="${BASE_IBC_PATH}/build/anoma/.anoma/${CHAIN_B_ID}/setup/validator-0/.anoma"
-
+GAIA_HOME_DIR="$HERMES_PATH/data/gaia"
 ANOMAN_PATH="${BASE_IBC_PATH}/build/anoma/target/release/anoman"
 HERMES_PATH="${BASE_IBC_PATH}/build/ibc-rs"
 GAIA_PATH="${BASE_IBC_PATH}/build/gaia"
@@ -80,7 +80,7 @@ start_hermes() {
 
 start_gaia() {
   printf "$STATUS_INFO Staring Gaia\n\n"
-  cd $GAIA_PATH && exec build/gaiad --home $HERMES_PATH/data/gaia start --pruning=nothing --grpc.address="0.0.0.0:9092" --log_level error
+  cd $GAIA_PATH && exec build/gaiad --home $GAIA_HOME_DIR --pruning=nothing --grpc.address="0.0.0.0:9092" --log_level error
 }
 
 case $APP in
