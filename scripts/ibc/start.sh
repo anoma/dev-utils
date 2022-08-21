@@ -33,14 +33,17 @@ if [ ! -f $CONFIG_PATH ]; then
 fi
 
 CONFIG="$( cat $CONFIG_PATH ) "
-CHAIN_A_ID=$( echo "${CONFIG%?}" | grep "chain_a_id" | cut -d \" -f2 )
-CHAIN_B_ID=$( echo "${CONFIG%?}" | grep "chain_b_id" | cut -d \" -f2 )
+CHAIN_A_ID=$( echo "${CONFIG%?}" | grep -m1 "chain_id" | cut -d \" -f2 )
+CHAIN_B_ID=$( echo "${CONFIG%?}" | grep -m2 "chain_id" | sed -n 2p | cut -d \" -f2 )
 
 CHAIN_A_BASE_DIR="${BASE_IBC_PATH}/build/anoma/.anoma/${CHAIN_A_ID}/setup/validator-0/.anoma"
 CHAIN_B_BASE_DIR="${BASE_IBC_PATH}/build/anoma/.anoma/${CHAIN_B_ID}/setup/validator-0/.anoma"
 
 ANOMAN_PATH="${BASE_IBC_PATH}/build/anoma/target/release/anoman"
 HERMES_PATH="${BASE_IBC_PATH}/build/ibc-rs"
+
+GAIA_HOME_DIR="$HERMES_PATH/data/gaia"
+GAIA_PATH="${BASE_IBC_PATH}/build/gaia"
 
 if [ -z "$1" ]
 then
@@ -77,6 +80,11 @@ start_hermes() {
   cd $HERMES_PATH && exec cargo run --bin hermes -- -c config.toml start
 }
 
+start_gaia() {
+  printf "$STATUS_INFO Staring Gaia\n\n"
+  cd $GAIA_PATH && exec build/gaiad --home $GAIA_HOME_DIR start --grpc.address="0.0.0.0:9092" --log_level info
+}
+
 case $APP in
   chain-a)
     start_chain_a
@@ -86,6 +94,9 @@ case $APP in
     ;;
   hermes)
     start_hermes
+    ;;
+  gaia)
+    start_gaia
     ;;
   *)
     echo "No app by that name found!"

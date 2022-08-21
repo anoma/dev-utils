@@ -72,9 +72,16 @@ else
   HERMES_BRANCH="yuji/v0.14.0_anoma"
 fi
 
+if [ ! -z $GAIA_BRANCH ]; then
+  GAIA_BRANCH=$GAIA_BRANCH
+else
+  GAIA_BRANCH="yuji/ics23_smt"
+fi
+
 BUILD_DIR="$BASE_BUILD_PATH/build"
 ANOMA_DIR="anoma"
 HERMES_DIR="ibc-rs"
+GAIA_DIR="gaia"
 
 USE_GIT_SSH=false
 
@@ -95,6 +102,7 @@ GITHUB_HTTPS_URL="https://github.com"
 
 ANOMA_REPO="/anoma/anoma.git"
 HERMES_REPO="/heliaxdev/ibc-rs.git"
+GAIA_REPO="/heliaxdev/gaia.git"
 
 GENESIS_PATH="genesis/e2e-tests-single-node.toml"
 WASM_CHECKSUMS_PATH="wasm/checksums.json"
@@ -134,9 +142,11 @@ fi
 
 ANOMA_GIT_URL="${GITHUB_HTTPS_URL}${ANOMA_REPO}"
 HERMES_GIT_URL="${GITHUB_HTTPS_URL}${HERMES_REPO}"
+GAIA_GIT_URL="${GITHUB_HTTPS_URL}${GAIA_REPO}"
 
 [[ $USE_GIT_SSH == true ]] && ANOMA_GIT_URL="${GITHUB_SSH_URL}:${ANOMA_REPO}"
 [[ $USE_GIT_SSH == true ]] && HERMES_GIT_URL="${GITHUB_SSH_URL}:${HERMES_REPO}"
+[[ $USE_GIT_SSH == true ]] && GAIA_GIT_URL="${GIHUB_SSH_URL}:${GAIA_REPO}"
 
 check_dependencies
 
@@ -145,7 +155,7 @@ cd "$BUILD_DIR" && printf "\n$STATUS_WARN Set working directory to $(pwd)\n"
 
 # Clone anoma and ibc-rs repositories
 
-# Check for Anoma, git clone if none
+# Check for Namada, git clone if none
 printf "\n$STATUS_INFO Cloning $ANOMA_GIT_URL\n"
 [ ! -d $BUILD_DIR/$ANOMA_DIR ] &&  git clone  $ANOMA_GIT_URL || \
   printf "$STATUS_NOTICE Directory anoma exists, skipping git clone...\n\n"
@@ -155,16 +165,21 @@ printf "$STATUS_INFO Cloning $HERMES_GIT_URL\n"
 [ ! -d $BUILD_DIR/$HERMES_DIR ] && git clone $HERMES_GIT_URL || \
   printf "$STATUS_NOTICE Directory ibc-rs exists, skipping git clone...\n\n"
 
-# Install Anoma
-printf "\n$STATUS_INFO Installing Anoma\n"
+# Check for Gaia, git clone if none
+printf "$STATUS_INFO Cloning $GAIA_GIT_URL\n"
+[ ! -d $BUILD_DIR/$GAIA_DIR ] && git clone $GAIA_GIT_URL || \
+  printf "$STATUS_NOTICE Directory gaia exists, skipping git clone...\n\n"
+
+# Install Namada
+printf "\n$STATUS_INFO Installing Namada\n"
 cd $BUILD_DIR/$ANOMA_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
 
 git checkout $ANOMA_BRANCH
 printf "$STATUS_INFO checked out $ANOMA_BRANCH\n"
 
 if [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anomac  ] || [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anoman ]; then
-  printf "\n$STATUS_WARN Anoma not installed. Installing now...\n\n"
-  git checkout master && git pull && git checkout $ANOMA_BRANCH && make install
+  printf "\n$STATUS_WARN Namada not installed. Installing now...\n\n"
+  git checkout main && git pull && git checkout $ANOMA_BRANCH && make install
 
   rustup target add wasm32-unknown-unknown
   printf "\n$STATUS_INFO added rustup target wasm32-unknown-unknown\n"
@@ -172,12 +187,22 @@ if [ ! -f $BUILD_DIR/$ANOMA_DIR/target/release/anomac  ] || [ ! -f $BUILD_DIR/$A
   printf "\n$STATUS_INFO Building wasm scripts...\n\n"
   make build-wasm-scripts
 else
-  printf "$STATUS_NOTICE Anoma release targets already present, skipping build...\n"
+  printf "$STATUS_NOTICE Namada release targets already present, skipping build...\n"
 
   if [ -d $BUILD_DIR/$ANOMA_DIR/.anoma ]; then
-    printf "$STATUS_NOTICE Clearing existing Anoma configuration...\n"
+    printf "$STATUS_NOTICE Clearing existing Namada configuration...\n"
     rm -rf $BUILD_DIR/$ANOMA_DIR/.anoma
   fi
+fi
+
+# Install Gaia
+
+if [ ! -f $BUILD_DIR/$GAIA_DIR/build/gaiad ]; then
+  printf "\n$STATUS_INFO Building Gaia"
+  cd $BUILD_DIR/$GAIA_DIR  && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
+  git checkout $GAIA_BRANCH && make build
+  export PATH=$PATH:${pwd}/build
+  cd - && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
 fi
 
 # Initialize Namada Chains
@@ -300,6 +325,17 @@ printf "$STATUS_INFO Added $CHAIN_A_ID to $BUILD_DIR/$HERMES_DIR/config.toml\n"
 sed -i "s/$CHAIN_B_TEMPLATE/$CHAIN_B_ID/" $BUILD_DIR/$HERMES_DIR/config.toml
 printf "$STATUS_INFO Added $CHAIN_B_ID to $BUILD_DIR/$HERMES_DIR/config.toml\n"
 
+# Initialize Gaia
+
+printf "$STATUS_INFO Initializing Gaia\n"
+cd $BUILD_DIR/$HERMES_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n\n"
+if [ -d data/gaia ]; then
+  rm -rf data/gaia
+fi
+./scripts/one-chain gaiad gaia ./data 26657 26656 26660 9092 100
+
+# Launch Namada chains
+
 # Spawn Chain A
 printf "$STATUS_INFO Spawning Chain A anoman process\n"
 CHAIN_A_PID=$( spawn_anoma $CHAIN_A_ID )
@@ -352,29 +388,61 @@ printf "$STATUS_INFO Creating connection between $CHAIN_A_ID and $CHAIN_B_ID\n"
 CONNECTION_STDOUT="$( cargo run --bin hermes -- -c config.toml \
   create connection $CHAIN_A_ID $CHAIN_B_ID ) "
 
-CONNECTION_ID=$( echo "${CONNECTION_STDOUT%?}" | grep -A 3 connection_id | grep -m1 "connection-" |  tr -d " " | cut -d \" -f2 )
+CONNECTION_1_ID=$( echo "${CONNECTION_STDOUT%?}" | grep -A 3 connection_id | grep -m1 "connection-" |  tr -d " " | cut -d \" -f2 )
 
-printf "$STATUS_INFO Established connection with ID: $CONNECTION_ID\n"
+printf "$STATUS_INFO Established connection with ID: $CONNECTION_1_ID\n"
 
-printf "$STATUS_INFO Create channel on $CONNECTION_ID\n"
+printf "$STATUS_INFO Create channel on $CONNECTION_1_ID\n"
 
 CHANNEL_STDOUT="$( cargo run --bin hermes -- -c config.toml \
   create channel \
   --port-a transfer --port-b transfer \
-   $CHAIN_A_ID $CONNECTION_ID ) "
+   $CHAIN_A_ID $CONNECTION_1_ID ) "
 
 # We can likely just assume channel-0 for src and dst, as the chains will always be new.
 # This is mainly for debugging and seeing in the output that Hermes completed the channel creation process.
-CHANNEL_ID="channel-$( echo "${CHANNEL_STDOUT%?}" | grep -A 3 "channel_id: Some" | tr -d " " | grep -E -o -m1 "[0-9]+" )"
+CHANNEL_1_ID="channel-$( echo "${CHANNEL_STDOUT%?}" | grep -A 3 "channel_id: Some" | tr -d " " | grep -E -o -m1 "[0-9]+" )"
 echo "${CHANNEL_STDOUT%?}"
-printf "$STATUS_INFO Established channel with ID: $CHANNEL_ID\n"
+printf "$STATUS_INFO Established channel with ID: $CHANNEL_1_ID\n"
 
-# Kill existing anoman processes:
+# Add Gaia keys to Hermes
+printf "$STATUS_INFO Add user key Hermes\n"
+cargo run  --bin hermes -- -c config.toml keys add gaia -f data/gaia/user_seed.json
+printf "$STATUS_INFO Add user2 key to Hermes\n"
+cargo run  --bin hermes -- -c config.toml keys add gaia -f data/gaia/user2_seed.json
+
+# Create connection and channel between Gaia and Chain A
+printf "$STATUS_INFO Creating connection between gaia and $CHAIN_A_ID\n"
+CONNECTION_STDOUT="$( cargo run --bin hermes -- -c config.toml \
+  create connection gaia $CHAIN_A_ID ) "
+CONNECTION_2_ID=$( echo "${CONNECTION_STDOUT%?}" | grep -A 3 connection_id | grep -m1 "connection-" |  tr -d " " | cut -d \" -f2 )
+CHANNEL_STDOUT="$( cargo run --bin hermes -- -c config.toml \
+  create channel \
+  --port-a transfer --port-b transfer \
+   gaia $CONNECTION_2_ID ) "
+CHANNEL_2_ID="channel-$( echo "${CHANNEL_STDOUT%?}" | grep -A 3 "channel_id: Some" | tr -d " " | grep -E -o -m1 "[0-9]+" )"
+
+# Create connection and channel between Gaia and Chain B
+printf "$STATUS_INFO Creating connection between gaia and $CHAIN_B_ID\n"
+CONNECTION_STDOUT="$( cargo run --bin hermes -- -c config.toml \
+  create connection gaia $CHAIN_B_ID ) "
+CONNECTION_3_ID=$( echo "${CONNECTION_STDOUT%?}" | grep -A 3 connection_id | grep -m1 "connection-" |  tr -d " " | cut -d \" -f2 )
+CHANNEL_STDOUT="$( cargo run --bin hermes -- -c config.toml \
+  create channel \
+  --port-a transfer --port-b transfer \
+   gaia $CONNECTION_3_ID ) "
+CHANNEL_3_ID="channel-$( echo "${CHANNEL_STDOUT%?}" | grep -A 3 "channel_id: Some" | tr -d " " | grep -E -o -m1 "[0-9]+" )"
+
+# Kill existing anoman and gaiad processes:
 if [ ! command -v pkill &> /dev/null ]; then
-  printf "$STATUS_NOTICE pkill command not found! You will need to manually kill PIDs: $CHAIN_A_PID & $CHAIN_B_PID\n\n"
+  kill -9 $CHAIN_A_PID && printf "$STATUS_WARN Killed process with PID = $CHAIN_A_PID\n"
+  kill -9 $CHAIN_B_PID && printf "$STATUS_WARN Killed process with PID = $CHAIN_B_PID\n"
+  # TODO: Get PID of gaiad to kill here, to be invoked manually later
 else
   pkill anoman
+  pkill gaiad
 fi
+
 cd $BUILD_DIR && printf "\n$STATUS_WARN Changed directory to $(pwd)\n" 
 
 # Generate a runtime config for CLI:
@@ -382,13 +450,32 @@ CONFIG_PATH=$BUILD_DIR/config.toml
 
 write_config() {
   cat <<EOF > $CONFIG_PATH
-[chain]
+[[chain]]
+chain_id = "$CHAIN_A_ID"
+
+[[chain]]
+chain_id = "$CHAIN_B_ID"
+
+[[chain]]
+chain_id = "gaia"
+
+[[connection]]
 chain_a_id = "$CHAIN_A_ID"
 chain_b_id = "$CHAIN_B_ID"
+connection_id = "$CONNECTION_1_ID"
+channel_id = "$CHANNEL_1_ID"
 
-[ibc]
-connection_id = "$CONNECTION_ID"
-channel_id = "$CHANNEL_ID"
+[[connection]]
+chain_a_id = "gaia"
+chain_b_id = "$CHAIN_A_ID"
+connection_id = "$CONNECTION_2_ID"
+channel_id = "$CHANNEL_2_ID"
+
+[[connection]]
+chain_a_id = "gaia"
+chain_b_id = "$CHAIN_B_ID"
+connection_id = "$CONNECTION_3_ID"
+channel_id = "$CHANNEL_3_ID"
 EOF
 }
 
@@ -397,6 +484,8 @@ ENV_PATH=$BUILD_DIR/.env
 
 write_env() {
   cat <<EOF > $ENV_PATH
+GENERATE_SOURCEMAP=false
+
 # Chain A
 REACT_APP_CHAIN_A_ALIAS=${CHAIN_A_ALIAS}
 REACT_APP_CHAIN_A_ID=${CHAIN_A_ID}
